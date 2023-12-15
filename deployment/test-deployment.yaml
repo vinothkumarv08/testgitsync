@@ -1,0 +1,6 @@
+template-file-path: vpc-defaults.yaml
+parameters:
+  SubnetCIDR: 10.205.2.0/24
+  NetworkCIDR: 10.205.0.0/16
+  AvailabilityZoneName: ap-southeast-2a
+tags: {}
