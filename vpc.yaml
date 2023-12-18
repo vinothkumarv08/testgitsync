@@ -54,6 +54,8 @@ Resources:
          Value: demo-public-route-table
        - Key: Application
          Value: !Ref 'AWS::StackName'
+       - Key: Test
+         Value: False
   
   myRoutes:
     Type: AWS::EC2::Route    
