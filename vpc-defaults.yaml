@@ -82,6 +82,8 @@ Resources:
             - !Ref AvailabilityZoneName
       - Key: Application
         Value: !Ref 'AWS::StackName'
+      - Key: Test
+        Value: False
   
   mySubnetRouteTableAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
