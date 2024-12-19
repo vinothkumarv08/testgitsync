@@ -5,7 +5,7 @@ Parameters:
   BucketName:
     Type: String
     Description: Name of the S3 bucket.
-    Default: test586570vk24743255
+    Default: test586570vk247432556
   EnableVersioning:
     Type: String
     AllowedValues: ["Enabled", "Suspended"]
