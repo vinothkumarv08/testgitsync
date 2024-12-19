@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create an S3 bucket with optional configurations.
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Name of the S3 bucket.
+  EnableVersioning:
+    Type: String
+    AllowedValues: ["Enabled", "Suspended"]
+    Default: "Suspended"
+    Description: Enable versioning for the S3 bucket.
+  PublicAccess:
+    Type: String
+    AllowedValues: ["Yes", "No"]
+    Default: "No"
+    Description: Set to 'Yes' to allow public read access.
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+      VersioningConfiguration:
+        Status: !Ref EnableVersioning
+      AccessControl: !If 
+        - PublicAccessYes
+        - PublicRead
+        - Private
+
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: PublicAccessYes
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: 
+              - "s3:GetObject"
+            Resource: !Sub "${S3Bucket.Arn}/*"
+
+Conditions:
+  PublicAccessYes: !Equals [!Ref PublicAccess, "Yes"]
+
+Outputs:
+  BucketName:
+    Description: The name of the created S3 bucket.
+    Value: !Ref S3Bucket
+  BucketArn:
+    Description: The ARN of the created S3 bucket.
+    Value: !GetAtt S3Bucket.Arn
