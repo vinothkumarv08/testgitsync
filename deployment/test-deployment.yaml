@@ -1,6 +1,5 @@
-template-file-path: vpc-defaults.yaml
-parameters:
-  SubnetCIDR: 10.205.2.0/24
-  NetworkCIDR: 10.205.0.0/16
-  AvailabilityZoneName: ap-southeast-2a
-tags: {}
+template-file-path: Security-Group.yaml
+Parameters:
+  VPCId: vpc-02cff9df7f79083cf
+  IngressCidr: 192.168.0.0/0
+tags: {}  
