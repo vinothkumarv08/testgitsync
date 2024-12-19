@@ -1,106 +1,46 @@
-AWSTemplateFormatVersion: 2010-09-09
-Description: 
-  Sample template to create a VPC with IGW and public IP enabled.
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation Template to create a Security Group
 
 Parameters:
-  # CIDR of VPC
-  NetworkCIDR:
-    Description: CIDR of the new VPC
+  VPCId:
+    Type: AWS::EC2::VPC::Id
+    Description: The ID of the VPC where the security group will be created.
+
+  IngressCidr:
     Type: String
-    Default: 10.205.0.0/16
-    
-  # AZ Name where subnet will be created
-  AvailabilityZoneName:
-    Description: CIDR of the new VPC
-    Type: AWS::EC2::AvailabilityZone::Name
-    Default: ap-southeast-2a
-    
-  # CIDR of new subnet within this VPC
-  SubnetCIDR:
-    Description: CIDR of the new subnet within this VPC
-    Type: String
-    Default: 10.205.1.0/24
-    
+    Default: 0.0.0.0/0
+    Description: CIDR range for ingress traffic. Default is open to all.
+
 Resources:
-  myVPC:
-    Type: AWS::EC2::VPC
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
     Properties: 
-      CidrBlock: !Ref NetworkCIDR
-      EnableDnsHostnames: 'true'
-      EnableDnsSupport: 'true'
-      Tags: 
-       - Key: Name
-         Value: demo-vpc
-       - Key: Application
-         Value: !Ref 'AWS::StackName'
-  myIGW:
-    Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags: 
-       - Key: Name
-         Value: demo-igw
-       - Key: Application
-         Value: !Ref 'AWS::StackName'           
-  
-  vpcToIgw:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      VpcId: !Ref myVPC
-      InternetGatewayId: !Ref myIGW
+      GroupDescription: Allow specific ingress and egress traffic
+      VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref IngressCidr
+          Description: Allow SSH traffic
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref IngressCidr
+          Description: Allow HTTP traffic
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref IngressCidr
+          Description: Allow HTTPS traffic
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic
 
-  myRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref myVPC
-      Tags: 
-       - Key: Name
-         Value: demo-public-route-table
-       - Key: Application
-         Value: !Ref 'AWS::StackName'
-  
-  myRoutes:
-    Type: AWS::EC2::Route    
-    Properties:
-      RouteTableId: !Ref myRouteTable
-      DestinationCidrBlock: '0.0.0.0/0'
-      GatewayId: !Ref myIGW      
-                
-  # creating a public subnet
-  myPublicSubnet:
-    Type: AWS::EC2::Subnet
-    Properties: 
-      VpcId: !Ref myVPC
-      AvailabilityZone: !Ref AvailabilityZoneName
-      CidrBlock: !Ref SubnetCIDR
-      MapPublicIpOnLaunch: true
-      Tags: 
-      - Key: Name
-        Value: 
-          !Join 
-          - ''
-          - - 'public-subnet-'
-            - !Ref AvailabilityZoneName
-      - Key: Application
-        Value: !Ref 'AWS::StackName'
-      - Key: Test
-        Value: False
-  
-  mySubnetRouteTableAssociation:
-    Type: 'AWS::EC2::SubnetRouteTableAssociation'
-    Properties:
-      SubnetId: !Ref myPublicSubnet
-      RouteTableId: !Ref myRouteTable
-
-# output key resources ids and export the values for cross-stack referencing
 Outputs:
-  VpcID:
-    Description: ID of the newly created VPC
-    Value: !Ref myVPC
-    Export:
-      Name: !Sub "${AWS::StackName}-VPCID" # the name for cross referencing
-    
-  PublicSubnetID:
-    Description: SubnetId of the public subnet
-    Value: !Ref myPublicSubnet
-    Export:
-      Name: !Sub "${AWS::StackName}-SUBNET"
+  SecurityGroupId:
+    Description: The ID of the created Security Group
+    Value: !Ref SecurityGroup
