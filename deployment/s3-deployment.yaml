@@ -1,5 +1,5 @@
 template-file-path: S3.yaml
 Parameters:
-  BucketName: test586570vk24743255
+  BucketName: test586570vk247432556
   EnableVersioning: Suspended
 tags: {}  
