@@ -1,5 +1,5 @@
 template-file-path: vpc-defaults.yaml
 Parameters:
   VPCId: vpc-02cff9df7f79083cf
-  IngressCidr: 192.168.0.0/0
+  IngressCidr: 192.169.0.0/0
 tags: {}  
