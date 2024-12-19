@@ -3,8 +3,8 @@ Description: CloudFormation Template to create a Security Group
 
 Parameters:
   VPCId:
-    Type: AWS::EC2::VPC::Id
-    Description: The ID of the VPC where the security group will be created.
+    Type: String
+    Default: vpc-02cff9df7f79083cf
 
   IngressCidr:
     Type: String
