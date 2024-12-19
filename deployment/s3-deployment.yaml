@@ -1,6 +1,5 @@
 template-file-path: S3.yaml
 Parameters:
-  BucketName: test586570vk24
+  BucketName: test586570vk24743255
   EnableVersioning: Suspended
-  PublicAccess: No
 tags: {}  
