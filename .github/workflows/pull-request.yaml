@@ -1,7 +1,9 @@
 name: Pull Request workflow
 
 on:
-  - pull_request
+  pull_request:
+    paths:
+      - '**/*.yaml' # Monitor changes to YAML files in the repository.
 
 jobs:
   cloudformation-linter:
@@ -10,7 +12,44 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Linter install
-        uses: scottbrenner/cfn-lint-action@v2
+
+      - name: Determine Changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v34
         with:
-          command: cfn-lint -t ./*.yaml
+          files: |
+            ./**/*.yaml
+
+      - name: Run Linter for Changed Templates
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "Running linter for $file"
+            cfn-lint -t $file
+          done
+
+  cloudformation-deploy:
+    runs-on: ubuntu-latest
+    needs: cloudformation-linter
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine Changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v34
+        with:
+          files: |
+            ./**/*.yaml
+
+      - name: Deploy Changed Templates
+        if: ${{ steps.changed-files.outputs.any_changed == 'true' }}
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "Deploying $file to AWS CloudFormation"
+            aws cloudformation deploy \
+              --template-file $file \
+              --stack-name $(basename $file .yaml)-stack \
+              --capabilities CAPABILITY_NAMED_IAM
+          done
