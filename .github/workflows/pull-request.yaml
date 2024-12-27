@@ -1,43 +1,16 @@
 name: Pull Request workflow
 
 on:
-  pull_request:
-    paths:
-      - 'S3.yaml'
-      - 'vpc-defaults.yaml'
+  - pull_request
 
 jobs:
-  deploy-cloudformation:
+  cloudformation-linter:
     runs-on: ubuntu-latest
+
     steps:
-      # Checkout code
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      # Set up AWS CLI
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Linter install
+        uses: scottbrenner/cfn-lint-action@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      # Detect changed files and deploy
-      - name: Deploy CloudFormation Template
-        run: |
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
-
-          if echo "$CHANGED_FILES" | grep -q "templates/security-group.yaml"; then
-            echo "Deploying Security Group Template..."
-            aws cloudformation deploy \
-              --template-file templates/security-group.yaml \
-              --stack-name security-group-stack \
-              --capabilities CAPABILITY_NAMED_IAM
-          elif echo "$CHANGED_FILES" | grep -q "templates/s3.yaml"; then
-            echo "Deploying S3 Template..."
-            aws cloudformation deploy \
-              --template-file templates/s3.yaml \
-              --stack-name s3-stack \
-              --capabilities CAPABILITY_NAMED_IAM
-          else
-            echo "No relevant changes detected. Skipping deployment."
+          command: cfn-lint -t ./*.yaml
